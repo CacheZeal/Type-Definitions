@@ -50,3 +50,44 @@ declare JD_KEY_SESSION_COUNT: number
 
 --- Unique Roblox user IDs running this script in this server
 declare JD_LIVE_USERS: { number }
+
+--- Secure HTTP request macro (similar to Luarmor's Secure Request macro)
+declare JD_SECURE_REQUEST: (options: {
+    Url: string,
+    Method: ("GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS")?,
+    Headers: { [string]: string }?,
+    Body: any,
+    Params: { [string]: any }?,
+    Limits: {
+        PerKey: number?,
+        PerIp: number?,
+    }?,
+}) -> {
+    Success: boolean,
+    StatusCode: number,
+    StatusMessage: string,
+    Headers: { [string]: string },
+    Body: string,
+}
+
+--- Validate a string or whole number against a literal RE2 pattern inside JD_SECURE_REQUEST (maybe can't be used outside idk)
+declare JD_SANITIZE: (value: string | number, pattern: string) -> string
+
+--- Validate a string inside JD_SECURE_REQUEST, MaxLength is from 1 to 16384
+declare JD_VALIDATE: (value: string, options: {
+    MaxLength: number,
+    Pattern: string?,
+}) -> string
+
+--- Read verified server sided key values inside JD_SECURE_REQUEST to prevent spoofing
+declare JD_SERVER_VALUE:
+    ((name: "JD_IS_PREMIUM") -> boolean)
+    & ((name: "JD_DISCORD_ID") -> string)
+
+--- Define one top level anonymous notification callback, duration is in seconds
+declare JD_NOTIFY: (callback: (
+    title: string,
+    message: string,
+    duration: number,
+    kind: "Info" | "Success" | "Warning" | "Error"
+) -> ()) -> ()
