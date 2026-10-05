@@ -70,7 +70,7 @@ declare JD_SECURE_REQUEST: (options: {
     Body: string,
 }
 
---- Validate a string or whole number against a literal RE2 pattern inside JD_SECURE_REQUEST (maybe can't be used outside idk)
+--- Validate a string or whole number against a literal RE2 pattern inside JD_SECURE_REQUEST
 declare JD_SANITIZE: (value: string | number, pattern: string) -> string
 
 --- Validate a string inside JD_SECURE_REQUEST, MaxLength is from 1 to 16384
