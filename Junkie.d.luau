@@ -1,93 +1,111 @@
 --!strict
 
---- Whether the player has Premium access
-declare JD_IS_PREMIUM: boolean
-
---- Use this instead of JD_EXPIRES_AT to detect keyless access
-declare JD_REASON: "KEY_VALID" | "KEYLESS"
-
---- Public token of the current script
-declare JD_SCRIPT_ID: string
-
---- Key creation time in Unix seconds, nil if data isn't available ig
-declare JD_CREATED_AT: number?
-
---- Key expiration time in Unix seconds, nil for lifetime, keyless, or unavailable data
-declare JD_EXPIRES_AT: number?
-
---- Executor hwid id used for HWID binding when available
-declare JD_FINGERPRINT: string?
-
---- Linked Discord user ID when available
-declare JD_DISCORD_ID: string?
-
---- Stored Discord username when available
-declare JD_DISCORD_USERNAME: string?
-
---- Display name alias currently the same stored name as JD_DISCORD_USERNAME
-declare JD_DISCORD_DISPLAY_NAME: string?
-
---- Discord avatar url
-declare JD_DISCORD_PFP: string?
-
---- Execution count for the current key across scripts
-declare JD_EXECUTIONS: number
-
---- Execution count for the current script across whole yeah
-declare JD_SCRIPT_EXECUTIONS: number
-
---- Accumulated runtime for the current key in seconds
-declare JD_USAGE: number
-
---- Accumulated runtime for the current script in seconds
-declare JD_SCRIPT_USAGE: number
-
---- Active sessions for the current script across servers
-declare JD_SESSION_COUNT: number
-
---- Active sessions for the current key
-declare JD_KEY_SESSION_COUNT: number
-
---- Unique Roblox user IDs running this script in this server
-declare JD_LIVE_USERS: { number }
-
---- Secure HTTP request macro (similar to Luarmor's Secure Request macro)
-declare JD_SECURE_REQUEST: (options: {
+export type JD_Reason = "KEY_VALID" | "KEYLESS"
+export type JD_HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS"
+export type JD_NotificationKind = "Info" | "Success" | "Warning" | "Error"
+export type JD_SecureRequestOptions = {
     Url: string,
-    Method: ("GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS")?,
+    Method: JD_HttpMethod?,
     Headers: { [string]: string }?,
-    Body: any,
+    Body: any?,
     Params: { [string]: any }?,
     Limits: {
         PerKey: number?,
         PerIp: number?,
     }?,
-}) -> {
+}
+export type JD_SecureResponse = {
     Success: boolean,
     StatusCode: number,
     StatusMessage: string,
     Headers: { [string]: string },
     Body: string,
 }
-
---- Validate a string or whole number against a literal RE2 pattern inside JD_SECURE_REQUEST
-declare JD_SANITIZE: (value: string | number, pattern: string) -> string
-
---- Validate a string inside JD_SECURE_REQUEST, MaxLength is from 1 to 16384
-declare JD_VALIDATE: (value: string, options: {
+export type JD_ValidateOptions = {
     MaxLength: number,
     Pattern: string?,
-}) -> string
+}
 
---- Read verified server sided key values inside JD_SECURE_REQUEST to prevent spoofing
+--- Whether the authenticated access has Premium status.
+declare JD_IS_PREMIUM: boolean
+
+--- "KEY_VALID" or "KEYLESS". Use this to distinguish authentication mode.
+declare JD_REASON: JD_Reason
+
+--- Public token of the current script, not its numeric database ID.
+declare JD_SCRIPT_ID: string
+
+--- Key creation timestamp (Unix seconds). nil when no key metadata is available.
+declare JD_CREATED_AT: number?
+
+--- Key expiration timestamp (Unix seconds). nil for lifetime or keyless access.
+declare JD_EXPIRES_AT: number?
+
+--- Executor device identity used for HWID binding, when available.
+declare JD_FINGERPRINT: string?
+
+--- Linked Discord user ID when available.
+declare JD_DISCORD_ID: string?
+
+--- Stored Discord username when available.
+declare JD_DISCORD_USERNAME: string?
+
+--- Display-name alias. Currently uses the same stored name as JD_DISCORD_USERNAME.
+declare JD_DISCORD_DISPLAY_NAME: string?
+
+--- Discord avatar URL when avatar metadata is available.
+declare JD_DISCORD_PFP: string?
+
+--- Execution count for the current key, across scripts that use it.
+declare JD_EXECUTIONS: number
+
+--- Execution count for the current script across keys.
+declare JD_SCRIPT_EXECUTIONS: number
+
+--- Accumulated runtime for the current key, in seconds.
+declare JD_USAGE: number
+
+--- Accumulated runtime for the current script, in seconds.
+declare JD_SCRIPT_USAGE: number
+
+--- Active sessions for the current script, across servers.
+declare JD_SESSION_COUNT: number
+
+--- Active sessions for the current key.
+declare JD_KEY_SESSION_COUNT: number
+
+--- Array of unique Roblox user IDs running the same script in the same server.
+declare JD_LIVE_USERS: { number }
+
+--- Send an HTTP request without exposing its destination URL in your generated script.
+declare JD_SECURE_REQUEST: (options: JD_SecureRequestOptions) -> JD_SecureResponse
+
+--- Restricts a value to a literal RE2 pattern inside JD_SECURE_REQUEST.
+declare JD_SANITIZE: (value: string | number, pattern: string) -> string
+
+--- Enforces length and optional pattern checks on string values inside JD_SECURE_REQUEST.
+declare JD_VALIDATE: (value: string, options: JD_ValidateOptions) -> string
+
+--- Read verified server-sided key values inside JD_SECURE_REQUEST to prevent spoofing.
 declare JD_SERVER_VALUE:
     ((name: "JD_IS_PREMIUM") -> boolean)
     & ((name: "JD_DISCORD_ID") -> string)
+    & ((name: "JD_IP") -> string)
+    & ((name: "JD_COUNTRY_CODE") -> string)
+    & ((name: "JD_KEY") -> string)
+    & ((name: "JD_KEY_CREATED_AT") -> string)
+    & ((name: "JD_KEY_EXPIRES_AT") -> string)
+    & ((name: "JD_SERVICE_NAME") -> string)
+    & ((name: "JD_KEY_EXECUTIONS") -> number)
+    & ((name: "JD_SCRIPT_EXECUTIONS") -> number)
+    & ((name: "JD_KEY_CREATED_AT_UNIX") -> number)
+    & ((name: "JD_KEY_EXPIRES_AT_UNIX") -> number)
+    & ((name: "JD_SCRIPT_ID") -> number)
 
---- Define one top level anonymous notification callback, duration is in seconds
+--- Define how a protected script displays notifications sent from Live Sessions.
 declare JD_NOTIFY: (callback: (
     title: string,
     message: string,
     duration: number,
-    kind: "Info" | "Success" | "Warning" | "Error"
+    kind: JD_NotificationKind
 ) -> ()) -> ()
